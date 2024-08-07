@@ -1,0 +1,27 @@
+<mat-toolbar>
+  <button mat-icon-button routerLink="/service-list"><mat-icon>arrow_back</mat-icon></button>
+  <span>Criar perfil</span>
+  <span class="spacer"></span>
+</mat-toolbar>
+
+<form [formGroup]="formRegisterProfile" (ngSubmit)="registerProfile()"
+    style="display: flex; flex-direction: column; padding: 16px;">
+    <mat-form-field>
+        <mat-label>Nome</mat-label>
+        <input formControlName="name" matInput placeholder="Seu nome">
+    </mat-form-field>
+    <mat-form-field>
+        <mat-label>Empresa</mat-label>
+        <input formControlName="companyName" matInput placeholder="Nome da empresa" />
+
+    </mat-form-field>
+    <mat-form-field>
+        <mat-label>Telefone</mat-label>
+        <input formControlName="phone" matInput placeholder="Fone" />
+
+    </mat-form-field>
+
+    <button color="primary" mat-flat-button>
+        Cadastrar
+    </button>
+</form>

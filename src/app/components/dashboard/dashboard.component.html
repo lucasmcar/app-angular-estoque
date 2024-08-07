@@ -1,0 +1,42 @@
+<mat-toolbar>
+  <span>Bem-vindo,</span>
+  <span class="spacer"></span>
+
+  <button routerLink="/register/profile" mat-icon-button>
+    <mat-icon>person_add</mat-icon>
+
+  </button>
+
+  <button (click)="signOut();" mat-icon-button class="example-icon favorite-icon"
+    aria-label="Example icon-button with heart icon">
+    <mat-icon>exit_to_app</mat-icon>
+  </button>
+
+</mat-toolbar>
+
+<div class="grid-cards">
+  <mat-card>
+    <mat-toolbar >Tintas</mat-toolbar>
+    <mat-card-content>
+      Registre e veja aqui as tintas em estoque ou que estão em falta
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-button routerLink="/tints">Acessar</a>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card>
+    <mat-toolbar>Materiais</mat-toolbar>
+    <mat-card-content>
+      Registre e veja aqui os materiais em estoque ou que estão em falta
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-button routerLink="/materials">Acessar</a>
+    </mat-card-actions>
+  </mat-card>
+
+  <mat-card>
+    Conteudo 1
+  </mat-card>
+
+</div>

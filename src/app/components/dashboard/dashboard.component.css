@@ -1,0 +1,10 @@
+.grid-cards{
+  display: grid;
+  padding: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+mat-card-content{
+  padding: 1.5rem;
+}

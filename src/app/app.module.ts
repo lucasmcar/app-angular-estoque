@@ -15,6 +15,8 @@ import { DialogErrorComponent } from './shared/dialog/dialog-error/dialog-error.
 import { RegisterUserComponent } from './components/register-user/register-user.component';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { DialogSuccessComponent } from './shared/dialog/dialog-success/dialog-success.component';
+import { DashboardComponent } from './components/dashboard/dashboard.component';
+import { RegisterProfileComponent } from './components/register-profile/register-profile.component';
 
 
 
@@ -25,7 +27,9 @@ import { DialogSuccessComponent } from './shared/dialog/dialog-success/dialog-su
     DialogComponent,
     DialogErrorComponent,
     RegisterUserComponent,
-    DialogSuccessComponent
+    DialogSuccessComponent,
+    DashboardComponent,
+    RegisterProfileComponent
   ],
   imports: [
     BrowserModule,
@@ -40,7 +44,7 @@ import { DialogSuccessComponent } from './shared/dialog/dialog-success/dialog-su
       // or after 30 seconds (whichever comes first).
       registrationStrategy: 'registerWhenStable:30000'
     }),
-    
+
 
   ],
   providers: [
