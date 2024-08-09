@@ -75,10 +75,10 @@ export class AuthService {
   }
 
 
-  getUser() : Promise<FirebaseUser | null>{
+  async getUser() : Promise<FirebaseUser | null>{
     return new Promise((resolve) => {
       onAuthStateChanged(this.auth, (user) => {
-        resolve(user)
+          resolve(user);
       });
     });
   }

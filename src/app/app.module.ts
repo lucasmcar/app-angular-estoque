@@ -18,7 +18,7 @@ import { DialogSuccessComponent } from './shared/dialog/dialog-success/dialog-su
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterProfileComponent } from './components/register-profile/register-profile.component';
 
-
+import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 
 @NgModule({
   declarations: [
@@ -38,6 +38,8 @@ import { RegisterProfileComponent } from './components/register-profile/register
     RouterModule,
     ReactiveFormsModule,
     HttpClientModule,
+    NgxMaskDirective,
+
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
@@ -50,6 +52,7 @@ import { RegisterProfileComponent } from './components/register-profile/register
   providers: [
     provideClientHydration(),
     provideAnimationsAsync(),
+    provideNgxMask({})
     //provideHttpClient(withFetch())
   ],
   bootstrap: [AppComponent]
