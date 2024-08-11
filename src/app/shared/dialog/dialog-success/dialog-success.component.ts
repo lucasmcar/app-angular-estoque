@@ -17,6 +17,6 @@ export class DialogSuccessComponent {
 
   onClose(){
     this.dialogRef.close();
-    this.router.navigate(['/dashboard']);
+
   }
 }

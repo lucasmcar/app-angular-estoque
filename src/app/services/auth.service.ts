@@ -41,9 +41,30 @@ export class AuthService {
       disableClose: true
     });
     return signInWithEmailAndPassword(this.auth, email, password)
-    .then((result) => {
-      dialogRef.close();
-      return result;
+    .then(async (result) => {
+      const user = result.user;
+
+      const userDocRef = doc(this.firestore, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+
+        // Verifica se o campo 'access' está definido e é verdadeiro
+        if (userData['access'] === false) {
+          console.log(userData['access']);
+          this.showErrorDialog("Usuário não permitido");
+          dialogRef.close();
+          return null;
+        }
+        // Se 'access' não estiver definido, considera que o usuário é um administrador
+        dialogRef.close();
+        return result;
+      } else {
+        // Caso o documento não exista, considera que o usuário é um administrador
+        dialogRef.close();
+        return null;
+      }
     }).catch((error) =>{
       this.showErrorDialog("Usuário ou senha inválidos");
       dialogRef.close();

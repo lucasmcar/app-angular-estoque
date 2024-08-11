@@ -30,12 +30,17 @@ export class LoginComponent implements OnInit{
     if(this.formLogin.valid){
       const { email, password } = this.formLogin.value;
       this.auth.login(email, password).
-      then(() => {
-        this.router.navigate(['/dashboard']);
+      then((result) => {
+        if (result) {
+          this.router.navigate(['/dashboard']);
+        } else {
+          // Mostrar mensagem de acesso negado ou similar
+          console.warn("Acesso negado ou erro durante o login.");
+        }
       })
       .catch(error => {})
-      }
     }
+  }
 
 
 

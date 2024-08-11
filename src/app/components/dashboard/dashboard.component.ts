@@ -21,6 +21,8 @@ export class DashboardComponent implements OnInit {
         const userProfile = await this.userService.getUserProfile(user.uid);
         if(userProfile && userProfile['companyName']){
           this.userProfile = userProfile['companyName'];
+        } else {
+          this.userProfile = userProfile!['name'];
         }
       }
     })
