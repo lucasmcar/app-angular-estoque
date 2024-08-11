@@ -1,4 +1,4 @@
-<mat-toolbar>
+<mat-toolbar color="primary">
   <span>Bem-vindo, {{ userProfile }}</span>
   <span class="spacer"></span>
 
@@ -36,7 +36,25 @@
   </mat-card>
 
   <mat-card>
-    Conteudo 1
+    <mat-toolbar>Colaborador</mat-toolbar>
+    <mat-card-content>
+      Registre os colaboradores, visualize e altere as permissões para uso no sistema
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-button routerLink="/collaborators">Acessar</a>
+    </mat-card-actions>
   </mat-card>
+
+  <mat-card>
+    <mat-toolbar>Serviços</mat-toolbar>
+    <mat-card-content>
+      Registre os Serviços
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-button routerLink="/services">Acessar</a>
+    </mat-card-actions>
+  </mat-card>
+
+
 
 </div>

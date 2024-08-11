@@ -21,6 +21,11 @@ const routes: Routes = [
     .then(m => m.DashboardModule)
   },
   {
+    path: 'collaborators',
+    loadChildren: () => import('./components/collaborators/collaborators/collaborators.module')
+    .then(m => m.CollaboratorsModule)
+  },
+  {
     path: 'register/profile',
     loadChildren: ()=>import('./components/register-profile/profile/profile.module')
     .then(m => m.ProfileModule)

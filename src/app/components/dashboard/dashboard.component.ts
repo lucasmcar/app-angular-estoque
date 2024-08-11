@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../services/user.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,7 +13,7 @@ export class DashboardComponent implements OnInit {
   backgroundColor: string = "blue";
   userProfile = '';
 
-  constructor(private userService: UserService, private router: Router){}
+  constructor(private userService: UserService, private auth: AuthService, private router: Router){}
 
   ngOnInit() {
     this.userService.user$.subscribe(async (user) =>{
@@ -25,7 +26,12 @@ export class DashboardComponent implements OnInit {
     })
   }
 
-  signOut(){
-
+  async signOut(){
+    try {
+      await this.auth.signOut();
+      this.router.navigate(['/login']); // Redireciona para a página de login após o logout
+    } catch (error) {
+      console.error('Error signing out', error);
+    }
   }
 }

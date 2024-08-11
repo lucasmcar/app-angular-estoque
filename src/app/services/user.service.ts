@@ -37,8 +37,12 @@ export class UserService {
   async createUserProfile(userId: string, name: string, companyName: string, phone: string){
 
     const dialogRef =  this.dialog.open(DialogComponent, {
+      data :{
+        text : 'Criando perfil...'
+      },
       disableClose: true
-    })
+    }
+  )
 
 
       const userProfile = {

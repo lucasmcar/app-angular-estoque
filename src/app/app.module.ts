@@ -19,6 +19,7 @@ import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterProfileComponent } from './components/register-profile/register-profile.component';
 
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { CollaboratorsComponent } from './components/collaborators/collaborators.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
     RegisterUserComponent,
     DialogSuccessComponent,
     DashboardComponent,
-    RegisterProfileComponent
+    RegisterProfileComponent,
+    CollaboratorsComponent
   ],
   imports: [
     BrowserModule,
