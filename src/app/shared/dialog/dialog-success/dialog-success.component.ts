@@ -11,7 +11,7 @@ export class DialogSuccessComponent {
 
   constructor(
     public dialogRef: MatDialogRef<DialogSuccessComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { successMsg: string },
+    @Inject(MAT_DIALOG_DATA) public data: {title: string, successMsg: string },
     private router: Router
   ) {}
 

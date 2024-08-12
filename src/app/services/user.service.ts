@@ -34,29 +34,29 @@ export class UserService {
     });
   }
 
-  async createUserProfile(userId: string, name: string, companyName: string, phone: string){
+  async createUserProfile(userId: string, name: string, companyName: string, phone: string) {
 
-    const dialogRef =  this.dialog.open(DialogComponent, {
-      data :{
-        text : 'Criando perfil...'
+    const dialogRef = this.dialog.open(DialogComponent, {
+      data: {
+        text: 'Criando perfil...'
       },
       disableClose: true
-    }
-  )
+    })
 
 
-      const userProfile = {
-        name,
-        companyName,
-        phone,
-        createdAt: serverTimestamp()
-      };
-      await setDoc(doc(this.firestore, 'users', userId), userProfile, { merge: true })
+    const userProfile = {
+      name,
+      companyName,
+      phone,
+      uid: userId,
+      createdAt: serverTimestamp()
+    };
+    await setDoc(doc(this.firestore, 'users', userId), userProfile, { merge: true })
       .then((result) => {
         this.showSuccessDialog('Usuário cadastrado com sucesso')
         dialogRef.close();
         return result;
-      }).catch ((error) => {
+      }).catch((error) => {
         this.showErrorDialog('Erro ao cadastrar perfil');
         dialogRef.close();
         throw error;
@@ -64,16 +64,16 @@ export class UserService {
 
   }
 
-  async getUserProfile(userId: string){
-    try{
+  async getUserProfile(userId: string) {
+    try {
       const userDocRef = doc(this.firestore, 'users', userId);
       const userDocSnap = await getDoc(userDocRef)
-      if(userDocSnap.exists()){
+      if (userDocSnap.exists()) {
         return userDocSnap.data();
       } else {
         return null;
       }
-    }catch( error ){
+    } catch (error) {
       console.error('Error while fetching user', error);
       throw error;
     }
@@ -85,7 +85,7 @@ export class UserService {
     });
   }
 
-  private showSuccessDialog(successMsg: string): void{
+  private showSuccessDialog(successMsg: string): void {
     this.dialog.open(DialogSuccessComponent, {
       data: { successMsg }
     })

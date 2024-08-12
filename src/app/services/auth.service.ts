@@ -44,7 +44,7 @@ export class AuthService {
     .then(async (result) => {
       const user = result.user;
 
-      const userDocRef = doc(this.firestore, 'users', user.uid);
+      const userDocRef = doc(this.firestore, 'collaborators', user.uid);
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
@@ -53,7 +53,7 @@ export class AuthService {
         // Verifica se o campo 'access' está definido e é verdadeiro
         if (userData['access'] === false) {
           console.log(userData['access']);
-          this.showErrorDialog("Usuário não permitido");
+          this.showErrorDialog("Erro!","Usuário não permitido");
           dialogRef.close();
           return null;
         }
@@ -63,10 +63,10 @@ export class AuthService {
       } else {
         // Caso o documento não exista, considera que o usuário é um administrador
         dialogRef.close();
-        return null;
+        return result;
       }
     }).catch((error) =>{
-      this.showErrorDialog("Usuário ou senha inválidos");
+      this.showErrorDialog("Ops! Algo deu errado!", "Usuário ou senha inválidos");
       dialogRef.close();
     });
   }
@@ -80,11 +80,11 @@ export class AuthService {
     });
     return createUserWithEmailAndPassword(this.auth, email, password)
     .then((result) =>{
-        this.showSuccessDialog("Usuário cadastro com sucesso")
+        this.showSuccessDialog("Sucesso!","Usuário cadastro com sucesso")
         dialogRef.close();
         return result;
     }).catch((error) =>{
-      this.showErrorDialog("Não foi possível cadastrar");
+      this.showErrorDialog("Ops! Algo deu errado!","Não foi possível cadastrar");
       dialogRef.close();
     })
 
@@ -102,15 +102,15 @@ export class AuthService {
     }).catch(error => console.error('Error', error));
   }
 
-  private showErrorDialog(errorMessage: string): void {
+  private showErrorDialog(title: string, errorMessage: string): void {
     this.dialog.open(DialogErrorComponent, {
-      data: { errorMessage }
+      data: {title, errorMessage }
     });
   }
 
-  private showSuccessDialog(successMsg: string): void{
+  private showSuccessDialog(title: string, successMsg: string): void{
     this.dialog.open(DialogSuccessComponent, {
-      data: { successMsg }
+      data: {title,  successMsg }
     })
   }
 

@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { CollaboratorsService } from '../../services/collaborators.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../services/user.service';
+import { AuthService } from '../../services/auth.service';
+import { User as FirebaseUser } from 'firebase/auth';
 
 @Component({
   selector: 'app-collaborators',
@@ -15,8 +17,9 @@ export class CollaboratorsComponent implements OnInit{
   collaborators: any[] = [];
   displayedColumns: string[] = ['name', 'email', 'role', 'access', 'actions'];
   formAddCollaborator: FormGroup;
+  userId : any;
 
-  constructor(private userService: UserService, private collaboratorService: CollaboratorsService, private fb: FormBuilder){
+  constructor(private userService: UserService, private auth: AuthService, private collaboratorService: CollaboratorsService, private fb: FormBuilder){
     this.formAddCollaborator = fb.group({
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -27,7 +30,17 @@ export class CollaboratorsComponent implements OnInit{
 
 
 
-  ngOnInit(): void {
+  async ngOnInit(){
+
+    try {
+      const user: FirebaseUser | null = await this.auth.getUser();
+      if (user) {
+        this.userId = user.uid;
+        console.log(this.userId);
+      }
+    } catch (error) {
+      console.error('Error fetching user', error);
+    }
     this.loadCollaborators();
   }
 
@@ -65,8 +78,9 @@ export class CollaboratorsComponent implements OnInit{
   async addCollaborator(){
     if(this.formAddCollaborator.valid){
       const {name,  email, password, role } = this.formAddCollaborator.value;
+
       try{
-        await this.collaboratorService.addCollaborator(name, email, password, role);
+        await this.collaboratorService.addCollaborator(this.userId, name, email, password, role);
         this.loadCollaborators();
         this.formAddCollaborator.reset();
       } catch(error){
@@ -76,8 +90,10 @@ export class CollaboratorsComponent implements OnInit{
   }
 
   removeCollaborator(email: string){
-
-  }
+    return this.collaboratorService.removeCollaborator(email).then(() => {
+      this.loadCollaborators();
+    });
+  };
 
   async loadCollaborators(){
     this.collaborators = await this.collaboratorService.getCollaborators();
