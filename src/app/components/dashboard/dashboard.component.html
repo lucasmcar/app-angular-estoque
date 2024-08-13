@@ -35,15 +35,18 @@
     </mat-card-actions>
   </mat-card>
 
-  <mat-card>
-    <mat-toolbar>Colaborador</mat-toolbar>
-    <mat-card-content>
-      Registre os colaboradores, visualize e altere as permissões para uso no sistema
-    </mat-card-content>
-    <mat-card-actions>
-      <a mat-button routerLink="/collaborators">Acessar</a>
-    </mat-card-actions>
-  </mat-card>
+
+
+      <mat-card *ngIf="!isLoading && isAdmin" >
+        <mat-toolbar>Colaborador</mat-toolbar>
+        <mat-card-content>
+          Registre os colaboradores, visualize e altere as permissões para uso no sistema
+        </mat-card-content>
+        <mat-card-actions>
+          <a mat-button routerLink="/collaborators">Acessar</a>
+        </mat-card-actions>
+      </mat-card>
+    
 
   <mat-card>
     <mat-toolbar>Serviços</mat-toolbar>

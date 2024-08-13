@@ -49,9 +49,10 @@ export class FormDialogComponent implements OnInit{
   async addPaint(){
     if (this.formAddPaint.valid) {
       const {colorGroup, colorName, code, brand } = this.formAddPaint.value;
-      this.router.navigate(['/colorpaints']);
       try{
         await this.carPaintService.addCarPaints(colorGroup, colorName, code, brand, this.userId);
+        this.formAddPaint.reset();
+        this.dialogRef.close();
       }catch(error){
         throw error;
       }
@@ -62,4 +63,5 @@ export class FormDialogComponent implements OnInit{
     this.router.navigate(['/carpaints']);
     this.dialogRef.close();
   }
+
 }

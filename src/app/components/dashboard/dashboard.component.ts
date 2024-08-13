@@ -13,22 +13,33 @@ export class DashboardComponent implements OnInit {
 
   backgroundColor: string = "blue";
   userProfile = '';
+  userRole = '';
+  isLoading: boolean = true;
+  isAdmin: boolean = false;
+
 
   constructor(private userService: UserService, private collaboratorService: CollaboratorsService, private auth: AuthService, private router: Router){}
 
   ngOnInit() {
     this.userService.user$.subscribe(async (user) =>{
       if(user){
-        console.log(user.uid)
         const userProfile = await this.userService.getUserProfile(user.uid);
         if(userProfile && userProfile['companyName']){
           this.userProfile = userProfile['companyName'];
+          this.isAdmin = true;
         } else {
           const collaboratorProfile = await this.collaboratorService.getCollaboratorProfile(user.uid);
+          this.userRole = collaboratorProfile!['role'];
+          this.isAdmin = !collaboratorProfile!['role'];
           this.userProfile = collaboratorProfile!['name'];
         }
       }
+      this.isLoading = false;
     })
+  }
+
+  get user(){
+    return this.userRole;
   }
 
   async signOut(){

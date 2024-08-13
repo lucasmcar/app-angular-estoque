@@ -7,6 +7,7 @@ import { BehaviorSubject, from, Observable } from 'rxjs';
 import { DialogComponent } from '../shared/dialog/dialog/dialog.component';
 import { DialogErrorComponent } from '../shared/dialog/dialog-error/dialog-error.component';
 import { DialogSuccessComponent } from '../shared/dialog/dialog-success/dialog-success.component';
+import { DataRefreshService } from './data-refresh.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class CarPaintsService {
   private db;
   private userSubject = new BehaviorSubject<FirebaseUser| null>(null);
 
-  constructor(private dialog: MatDialog) {
+  constructor(private dialog: MatDialog, private dataRefreshService: DataRefreshService) {
 
     this.app =  getApp();
     this.auth = getAuth();
@@ -79,6 +80,7 @@ export class CarPaintsService {
       .then((result) => {
         this.showSuccessDialog('Sucesso', 'Tinta cadastrada com sucesso')
         dialogRef.close();
+        this.dataRefreshService.triggerRefresh();
         return result;
       }).catch((error) => {
         this.showErrorDialog('Ops! algi deu errado', 'Erro ao cadastrar perfil');
@@ -89,7 +91,33 @@ export class CarPaintsService {
 
   updateCarPaints(){}
 
-  removeCarPaints(){}
+
+  async removeCarPaints(code: string) {
+    const dialogRef = this.dialog.open(DialogComponent, {
+      data :{
+        text : 'Removendo tinta...'
+      },
+      disableClose: true
+    });
+
+    const q = query(this.db, where("code", "==", code));
+    const querySnapshot = await getDocs(q);
+
+    const docSnapshot = querySnapshot.docs[0];
+    const userDocRef = doc(this.db, docSnapshot.id);
+
+    await deleteDoc(userDocRef)
+      .then((result) => {
+
+        this.showSuccessDialog("Removida", "Tinta removida com sucesso");
+        dialogRef.close();
+        return result;
+      }).catch((error) => {
+        this.showErrorDialog("Erro", "Não foi possível excluir");
+        dialogRef.close();
+        throw error;
+      });
+  }
 
 
   private showErrorDialog(title: string, errorMessage: string): void {
