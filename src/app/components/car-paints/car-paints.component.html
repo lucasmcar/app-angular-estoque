@@ -1,0 +1,61 @@
+<mat-toolbar color="primary">
+  <button mat-icon-button routerLink="/dashboard"><mat-icon>arrow_back</mat-icon></button>
+  <span>Tintas</span>
+  <span class="spacer"></span>
+</mat-toolbar>
+
+<mat-card>
+  <mat-card-title>Lista de Tintas</mat-card-title>
+  <mat-card-content>
+    <table mat-table [dataSource]="carPaints" class="mat-elevation-z8">
+
+      <ng-container matColumnDef="colorName">
+        <th mat-header-cell *matHeaderCellDef class="spacer">Nome
+          <button mat-icon-button (click)="reagrupar('colorName')">
+            <mat-icon>{{ getSortIcon('colorName') }}</mat-icon>
+          </button>
+        </th>
+        <td mat-cell *matCellDef="let carpaint">{{ carpaint.colorName }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="colorGroup">
+        <th mat-header-cell *matHeaderCellDef>Grupo</th>
+        <td mat-cell *matCellDef="let carpaint">{{ carpaint.colorGroup}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="code">
+        <th mat-header-cell *matHeaderCellDef>Código</th>
+        <td mat-cell *matCellDef="let carpaint">{{ carpaint.code }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="brand">
+
+        <th mat-header-cell *matHeaderCellDef>
+          Marca <button mat-icon-button (click)="reagrupar('brand')">
+            <mat-icon>{{ getSortIcon('brand') }}</mat-icon>
+          </button>
+        </th>
+
+        <td mat-cell *matCellDef="let carpaint">{{ carpaint.brand }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Ações</th>
+        <td mat-cell *matCellDef="let carpaint">
+          <button mat-icon-button color="warn" (click)="removePaint(carpaint.code)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </mat-card-content>
+</mat-card>
+
+
+
+<button mat-fab color="primary" class="fab-button" (click)="openFab()">
+  <mat-icon>add</mat-icon>
+</button>

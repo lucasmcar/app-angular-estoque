@@ -26,6 +26,11 @@ const routes: Routes = [
     .then(m => m.CollaboratorsModule)
   },
   {
+    path: 'carpaints',
+    loadChildren: () => import('./components/car-paints/car-paints/car-paints.module')
+    .then(m => m.CarPaintsModule)
+  },
+  {
     path: 'register/profile',
     loadChildren: ()=>import('./components/register-profile/profile/profile.module')
     .then(m => m.ProfileModule)

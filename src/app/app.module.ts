@@ -20,6 +20,8 @@ import { RegisterProfileComponent } from './components/register-profile/register
 
 import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
 import { CollaboratorsComponent } from './components/collaborators/collaborators.component';
+import { CarPaintsComponent } from './components/car-paints/car-paints.component';
+import { FormDialogComponent } from './shared/dialog/form-dialog/form-dialog.component';
 
 @NgModule({
   declarations: [
@@ -31,7 +33,9 @@ import { CollaboratorsComponent } from './components/collaborators/collaborators
     DialogSuccessComponent,
     DashboardComponent,
     RegisterProfileComponent,
-    CollaboratorsComponent
+    CollaboratorsComponent,
+    CarPaintsComponent,
+    FormDialogComponent
   ],
   imports: [
     BrowserModule,

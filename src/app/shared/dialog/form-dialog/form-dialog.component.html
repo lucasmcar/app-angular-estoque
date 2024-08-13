@@ -1,0 +1,29 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="formAddPaint" (ngSubmit)="addPaint()"
+    style="display: flex; flex-direction: column; padding: 16px;">
+    <mat-form-field>
+      <mat-label>Grupo de Cor:</mat-label>
+      <input matInput formControlName="colorGroup" required>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Nome da Cor:</mat-label>
+      <input matInput formControlName="colorName" required>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Código:</mat-label>
+      <input matInput formControlName="code" required>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Marca:</mat-label>
+      <input matInput formControlName="brand" required>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" type="submit">Salvar Tinta</button>
+    <button mat-raised-button type="button" (click)="cancel()">Cancelar</button>
+  </form>
+
+</mat-dialog-content>
