@@ -6,6 +6,7 @@ import { getAuth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CarPaintsService } from '../../../services/car-paints.service';
+import { SendNotificationService } from '../../../services/send-notification.service';
 
 @Component({
   selector: 'app-form-dialog',
@@ -24,6 +25,7 @@ export class FormDialogComponent implements OnInit{
     private auth: AuthService,
     private carPaintService: CarPaintsService,
     public dialogRef: MatDialogRef<FormDialogComponent>,
+    private notificationService: SendNotificationService,
     @Inject(MAT_DIALOG_DATA) public data: { title: string }) {
 
     this.formAddPaint = this.fb.group({
@@ -50,7 +52,11 @@ export class FormDialogComponent implements OnInit{
     if (this.formAddPaint.valid) {
       const {colorGroup, colorName, code, brand } = this.formAddPaint.value;
       try{
+
+        const phoneNumber = '+555196699337'; // Número do colaborador com código do país
+        const message = `Sua nova tinta ${colorName} - ${code} foi adicionada com sucesso!`;
         await this.carPaintService.addCarPaints(colorGroup, colorName, code, brand, this.userId);
+        this.notificationService.sendWhatsAppMessage(phoneNumber, message).subscribe((result) =>{})
         this.formAddPaint.reset();
         this.dialogRef.close();
       }catch(error){

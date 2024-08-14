@@ -8,6 +8,7 @@ import { DialogComponent } from '../shared/dialog/dialog/dialog.component';
 import { DialogErrorComponent } from '../shared/dialog/dialog-error/dialog-error.component';
 import { DialogSuccessComponent } from '../shared/dialog/dialog-success/dialog-success.component';
 import { DataRefreshService } from './data-refresh.service';
+import { SendNotificationService } from './send-notification.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,11 @@ export class CarPaintsService {
   private db;
   private userSubject = new BehaviorSubject<FirebaseUser| null>(null);
 
-  constructor(private dialog: MatDialog, private dataRefreshService: DataRefreshService) {
+  constructor(
+    private dialog: MatDialog,
+    private dataRefreshService: DataRefreshService,
+    private whatsapp: SendNotificationService
+  ) {
 
     this.app =  getApp();
     this.auth = getAuth();
@@ -78,7 +83,11 @@ export class CarPaintsService {
     };
     await addDoc(collection(this.firestore, 'carpaints'), carPaints)
       .then((result) => {
-        this.showSuccessDialog('Sucesso', 'Tinta cadastrada com sucesso')
+        this.showSuccessDialog('Sucesso', 'Tinta cadastrada com sucesso');
+
+        const collaboratorPhoneNumber = '+5551996699337'; // Número de telefone do colaborador (com o código do país)
+        const message = `Uma nova tinta foi adicionada: ${carPaints.colorName} (${carPaints.code})`;
+        //this.whatsapp.sendWhatsAppMessage(collaboratorPhoneNumber, message);
         dialogRef.close();
         this.dataRefreshService.triggerRefresh();
         return result;
