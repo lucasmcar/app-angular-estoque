@@ -9,6 +9,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatSort } from '@angular/material/sort';
 import { DataRefreshService } from '../../services/data-refresh.service';
+import { CollaboratorsService } from '../../services/collaborators.service';
+import { UserService } from '../../services/user.service';
 
 
 
@@ -21,27 +23,58 @@ export class CarPaintsComponent implements OnInit {
 
   carPaints: any[] = [];
   userId: string | undefined;
-  displayedColumns: string[] = ['colorGroup', 'colorName', 'code', 'brand', 'actions'];
+  displayedColumns: string[] = ['colorGroup', 'colorName', 'code', 'quantity', 'brand', 'actions'];
   currentSortDirection: 'asc' | 'desc' = 'asc';
   currentSortColumn: string = '';
+  userRole = '';
+  isLoading: boolean = true;
+  isAdmin: boolean = false;
+  userProfile: string = ''
   dataSource = new MatTableDataSource<any>([]);
   @ViewChild(MatPaginator) paginator: MatPaginator | any;
   @ViewChild(MatSort) sort: MatSort | any;
 
-  constructor(private dialog: MatDialog, private dataRefreshService: DataRefreshService, private auth: AuthService, private router: Router, private carPaintService: CarPaintsService){
+  constructor(
+    private dialog: MatDialog,
+    private dataRefreshService: DataRefreshService,
+    private auth: AuthService,
+    private router: Router,
+    private carPaintService: CarPaintsService,
+    private collaboratorService: CollaboratorsService,
+    private userService: UserService
+  ){
 
   }
 
   async ngOnInit() {
     this.getListColors('colorName', this.currentSortDirection);
-      try {
-      const user: FirebaseUser | null = await this.auth.getUser();
-      if (user) {
-        this.userId = user.uid;
-      } else {
-        this.router.navigate(['/login']); // Redireciona para a página de login se o usuário não estiver logado
+    this.userService.user$.subscribe(async (user) =>{
+      if(user){
+        const userProfile = await this.userService.getUserProfile(user.uid);
+        if(userProfile && userProfile['companyName']){
+          this.userProfile = userProfile['companyName'];
+          this.isAdmin = true;
+
+        } else {
+          const collaboratorProfile = await this.collaboratorService.getCollaboratorProfile(user.uid);
+          this.userRole = collaboratorProfile!['role'];
+          this.isAdmin = !collaboratorProfile!['role'];
+          this.userProfile = collaboratorProfile!['name'];
+
+
+
+        }
       }
-    } catch (error) {
+      this.isLoading = false;
+    })
+      try {
+        const user: FirebaseUser | null = await this.auth.getUser();
+        if (user) {
+          this.userId = user.uid;
+        } else {
+          this.router.navigate(['/login']); // Redireciona para a página de login se o usuário não estiver logado
+        }
+      } catch (error) {
       console.error('Error fetching user', error);
     }
 
@@ -85,6 +118,16 @@ export class CarPaintsComponent implements OnInit {
   }
 
 
+  useCarPaint(paint: any): void {
+    if (paint.quantity > 0) {
+      this.carPaintService.useCarPaint(paint.code, paint.quantity - 1).then(() => {
+        if (paint.quantity - 1 === 0) {
+          paint.quantity = 'Em falta';
+        }
+        this.refreshData();
+      });
+    }
+  }
 
   openFab(){
     const dialogRef = this.dialog.open(FormDialogComponent, {
@@ -93,5 +136,9 @@ export class CarPaintsComponent implements OnInit {
       },
       width: '40%'
     });
+  }
+
+  refreshData(): void {
+    this.getListColors(this.currentSortColumn, this.currentSortDirection);
   }
 }

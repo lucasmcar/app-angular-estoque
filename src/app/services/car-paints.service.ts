@@ -43,9 +43,6 @@ export class CarPaintsService {
 
   }
 
-
-
-
   getCarPaints(orderByField: string, orderDirection: 'asc' | 'desc' = 'asc'): Observable<any[]> {
     const dialogRef = this.dialog.open(DialogComponent,{
       data :{
@@ -63,7 +60,7 @@ export class CarPaintsService {
     }));
   }
 
-  async addCarPaints(colorGroup: string, colorName: string, code: string, brand: string, userId: string){
+  /*async addCarPaints(colorGroup: string, colorName: string, code: string, quantity: string, brand: string, userId: string){
 
     const dialogRef = this.dialog.open(DialogComponent, {
       data: {
@@ -77,6 +74,7 @@ export class CarPaintsService {
       colorGroup,
       colorName,
       code,
+      quantity,
       brand,
       uid: userId,
       createdAt: serverTimestamp()
@@ -96,7 +94,57 @@ export class CarPaintsService {
         dialogRef.close();
         throw error;
       });
-  }
+  }*/
+
+      async addOrUpdateCarPaint(colorGroup: string, colorName: string, code: string, quantity: string, brand: string, userId: string): Promise<void> {
+        const dialogRef = this.dialog.open(DialogComponent, {
+          data: {
+            text: 'Salvando dados...'
+          },
+          disableClose: true
+        });
+
+        try {
+          // Referência à coleção de tintas
+          const carPaintsCollection = collection(this.firestore, 'carpaints');
+
+          // Query para verificar se já existe uma tinta com o mesmo nome
+          const q = query(carPaintsCollection, where('colorName', '==', colorName));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            // Tinta já existe, incrementar a quantidade
+            const carPaintDoc = querySnapshot.docs[0];  // Assumindo que o nome da tinta é único
+            const existingData = carPaintDoc.data();
+
+            // Atualizar a quantidade
+            const newQuantity = (existingData['quantity'] || 0) + 1;
+
+            // Atualizar o documento no Firebase
+            await updateDoc(carPaintDoc.ref, { quantity: newQuantity });
+
+          } else {
+            // Tinta não existe, criar um novo documento
+            await addDoc(carPaintsCollection, {
+              colorGroup,
+              colorName,
+              code,
+              brand,
+              quantity,  // Começa com 1 unidade
+              createdBy: userId,
+              createdAt: serverTimestamp()
+            });
+          }
+
+          this.showSuccessDialog('Sucesso', 'Tinta salva com sucesso!');
+          this.dataRefreshService.triggerRefresh();
+        } catch (error) {
+          console.error('Erro ao salvar tinta: ', error);
+          this.showErrorDialog('Erro', 'Não foi possível salvar a tinta.');
+        } finally {
+          dialogRef.close();
+        }
+      }
 
   updateCarPaints(){}
 
@@ -139,5 +187,14 @@ export class CarPaintsService {
     this.dialog.open(DialogSuccessComponent, {
       data: { title, successMsg }
     })
+  }
+
+  async useCarPaint(code: string, newQuantity: number): Promise<void> {
+    const q = query(this.db, where("code", "==", code));
+    return getDocs(q).then(querySnapshot => {
+      const docSnapshot = querySnapshot.docs[0];
+      const userDocRef = doc(this.db, docSnapshot.id);
+      return setDoc(userDocRef, { quantity: newQuantity }, { merge: true });
+    });
   }
 }

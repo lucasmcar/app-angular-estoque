@@ -32,6 +32,7 @@ export class FormDialogComponent implements OnInit{
       colorGroup: ['', Validators.required],
       colorName: ['', Validators.required],
       code: ['', Validators.required],
+      quantity: [''],
       brand: ['', Validators.required]
     });
   }
@@ -50,13 +51,13 @@ export class FormDialogComponent implements OnInit{
 
   async addPaint(){
     if (this.formAddPaint.valid) {
-      const {colorGroup, colorName, code, brand } = this.formAddPaint.value;
+      const {colorGroup, colorName, code, quantity, brand } = this.formAddPaint.value;
       try{
 
         const phoneNumber = '+555196699337'; // Número do colaborador com código do país
         const message = `Sua nova tinta ${colorName} - ${code} foi adicionada com sucesso!`;
-        await this.carPaintService.addCarPaints(colorGroup, colorName, code, brand, this.userId);
-        this.notificationService.sendWhatsAppMessage(phoneNumber, message).subscribe((result) =>{})
+        await this.carPaintService.addOrUpdateCarPaint(colorGroup, colorName, code, quantity, brand, this.userId);
+        //this.notificationService.sendWhatsAppMessage(phoneNumber, message).subscribe((result) =>{})
         this.formAddPaint.reset();
         this.dialogRef.close();
       }catch(error){
