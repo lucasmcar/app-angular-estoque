@@ -18,10 +18,12 @@ import { DialogSuccessComponent } from './shared/dialog/dialog-success/dialog-su
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterProfileComponent } from './components/register-profile/register-profile.component';
 
-import { NgxMaskDirective, provideNgxMask } from 'ngx-mask';
+import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
 import { CollaboratorsComponent } from './components/collaborators/collaborators.component';
 import { CarPaintsComponent } from './components/car-paints/car-paints.component';
 import { FormDialogComponent } from './shared/dialog/form-dialog/form-dialog.component';
+import { MaterialsComponent } from './components/materials/materials.component';
+import { FormMaterialComponent } from './shared/dialog/form-material/form-material.component';
 
 @NgModule({
   declarations: [
@@ -35,7 +37,9 @@ import { FormDialogComponent } from './shared/dialog/form-dialog/form-dialog.com
     RegisterProfileComponent,
     CollaboratorsComponent,
     CarPaintsComponent,
-    FormDialogComponent
+    FormDialogComponent,
+    MaterialsComponent,
+    FormMaterialComponent
   ],
   imports: [
     BrowserModule,
@@ -45,6 +49,7 @@ import { FormDialogComponent } from './shared/dialog/form-dialog/form-dialog.com
     ReactiveFormsModule,
     HttpClientModule,
     NgxMaskDirective,
+    NgxMaskPipe,
 
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),

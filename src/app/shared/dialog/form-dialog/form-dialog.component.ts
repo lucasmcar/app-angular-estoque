@@ -25,7 +25,6 @@ export class FormDialogComponent implements OnInit{
     private auth: AuthService,
     private carPaintService: CarPaintsService,
     public dialogRef: MatDialogRef<FormDialogComponent>,
-    private notificationService: SendNotificationService,
     @Inject(MAT_DIALOG_DATA) public data: { title: string }) {
 
     this.formAddPaint = this.fb.group({
