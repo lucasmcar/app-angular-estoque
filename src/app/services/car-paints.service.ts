@@ -11,6 +11,7 @@ import { DataRefreshService } from './data-refresh.service';
 import { SendNotificationService } from './send-notification.service';
 
 import { LogService } from './log.service';
+import { Carpaints } from '../models/carpaints';
 
 @Injectable({
   providedIn: 'root'
@@ -73,7 +74,7 @@ export class CarPaintsService {
 
 
 
-  async addOrUpdateCarPaint(colorGroup: string, colorName: string, code: string, quantity: string, brand: string, userId: string): Promise<void> {
+  async addOrUpdateCarPaint(carpaint: Carpaints, userId: string): Promise<void> {
     const dialogRef = this.dialog.open(DialogComponent, {
       data: {
         text: 'Salvando dados...'
@@ -86,8 +87,10 @@ export class CarPaintsService {
       const carPaintsCollection = collection(this.firestore, 'carpaints');
 
       // Query para verificar se já existe uma tinta com o mesmo nome
-      const q = query(carPaintsCollection, where('colorName', '==', colorName));
+      const q = query(carPaintsCollection, where('colorName', '==', carpaint.colorName));
       const querySnapshot = await getDocs(q);
+
+      const quantityNumber = parseInt(carpaint.quantity, 10) || 0;
 
       if (!querySnapshot.empty) {
         // Tinta já existe, incrementar a quantidade
@@ -95,7 +98,7 @@ export class CarPaintsService {
         const existingData = carPaintDoc.data();
 
         // Atualizar a quantidade
-        const newQuantity = (existingData['quantity'] || 0) + 1;
+        const newQuantity = (parseInt(existingData['quantity'] || 0)) + quantityNumber;
 
         // Atualizar o documento no Firebase
         await updateDoc(carPaintDoc.ref, { quantity: newQuantity });
@@ -103,11 +106,7 @@ export class CarPaintsService {
       } else {
         // Tinta não existe, criar um novo documento
         await addDoc(carPaintsCollection, {
-          colorGroup,
-          colorName,
-          code,
-          brand,
-          quantity : quantity,
+          ...carpaint,
           createdBy: userId,
           createdAt: serverTimestamp()
         });

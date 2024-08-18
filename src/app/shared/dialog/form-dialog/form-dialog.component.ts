@@ -7,6 +7,7 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.service';
 import { CarPaintsService } from '../../../services/car-paints.service';
 import { SendNotificationService } from '../../../services/send-notification.service';
+import { Carpaints } from '../../../models/carpaints';
 
 @Component({
   selector: 'app-form-dialog',
@@ -51,11 +52,21 @@ export class FormDialogComponent implements OnInit{
   async addPaint(){
     if (this.formAddPaint.valid) {
       const {colorGroup, colorName, code, quantity, brand } = this.formAddPaint.value;
+
+      const carpaints: Carpaints = {
+        colorGroup,
+        colorName,
+        code,
+        quantity,
+        brand
+      }
+
+
       try{
 
         const phoneNumber = '+555196699337'; // Número do colaborador com código do país
         const message = `Sua nova tinta ${colorName} - ${code} foi adicionada com sucesso!`;
-        await this.carPaintService.addOrUpdateCarPaint(colorGroup, colorName, code, quantity, brand, this.userId);
+        await this.carPaintService.addOrUpdateCarPaint(carpaints, this.userId);
         //this.notificationService.sendWhatsAppMessage(phoneNumber, message).subscribe((result) =>{})
         this.formAddPaint.reset();
         this.dialogRef.close();

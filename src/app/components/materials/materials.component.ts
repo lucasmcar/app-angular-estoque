@@ -108,7 +108,7 @@ export class MaterialsComponent implements OnInit {
 
       const { materialName } = this.editForm.value;
 
-      const material: Materials = {
+      const material: any = {
         materialName: materialName
       }
 

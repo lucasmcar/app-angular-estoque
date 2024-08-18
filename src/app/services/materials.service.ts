@@ -63,13 +63,15 @@ export class MaterialsService {
       const q = query(materialsCollection, where('materialName', '==', material.materialName));
       const querySnapshot = await getDocs(q);
 
+      const quantityNumber = parseInt(material.quantity, 10) || 0;
+
       if (!querySnapshot.empty) {
         // Material já existe, incrementar a quantidade
         const materialDoc = querySnapshot.docs[0];  // Se nome  do material é único
         const existingData = materialDoc.data();
 
         // Atualizar a quantidade
-        const newQuantity = (existingData['quantity'] || 0) + 1;
+        const newQuantity = (parseInt(existingData['quantity'] || 0)) + quantityNumber;
 
         // Atualizar o documento no Firebase
         await updateDoc(materialDoc.ref, { quantity: newQuantity });
