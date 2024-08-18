@@ -37,7 +37,7 @@ export class CollaboratorsService {
     this.db = collection(this.firestore, 'collaborators')
   }
 
-  async addCollaborator(adminUid: string, name: string, email: string, password: string, role: string){
+  async addCollaborator(collaborator: Collaborator, adminUid: string){
 
     const dialogRef = this.dialog.open(DialogComponent, {
       data :{
@@ -46,16 +46,13 @@ export class CollaboratorsService {
       disableClose: true
     });
 
-    const userCredential = await createUserWithEmailAndPassword(this.auth, email, password);
+    const userCredential = await createUserWithEmailAndPassword(this.auth, collaborator.email, collaborator.password);
     const userDoc = doc(this.db, userCredential.user.uid);
 
 
     await setDoc(userDoc, {
-      name,
-      email,
-      role,
+      ...collaborator,
       collaboratorId: userCredential.user.uid,
-      access: true,
       createdBy: adminUid,
       createdAt: serverTimestamp()
     }).then((result) => {
@@ -75,7 +72,14 @@ export class CollaboratorsService {
   }
 
   async getCollaborators() {
+    const dialogRef = this.dialog.open(DialogComponent, {
+      data: {
+        text: 'Carregando dados'
+      },
+      disableClose: true
+    })
     const querySnapshot = await getDocs(query(this.db, where("role", "==", "collaborator")));
+    dialogRef.close();
     return querySnapshot.docs.map(doc => doc.data());
   }
 

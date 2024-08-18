@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { UserService } from '../../services/user.service';
 import { AuthService } from '../../services/auth.service';
 import { User as FirebaseUser } from 'firebase/auth';
+import { Collaborator } from '../../models/collaborator';
 
 @Component({
   selector: 'app-collaborators',
@@ -15,7 +16,7 @@ import { User as FirebaseUser } from 'firebase/auth';
 export class CollaboratorsComponent implements OnInit{
 
   collaborators: any[] = [];
-  displayedColumns: string[] = ['name', 'email', 'role', 'access', 'actions'];
+  displayedColumns: string[] = ['name', 'email', 'phone','role', 'access', 'actions'];
   formAddCollaborator: FormGroup;
   userId : any;
 
@@ -24,6 +25,7 @@ export class CollaboratorsComponent implements OnInit{
       name: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
+      phone: ['', Validators.required],
       role: ['collaborator', Validators.required]
     })
   }
@@ -77,10 +79,19 @@ export class CollaboratorsComponent implements OnInit{
 
   async addCollaborator(){
     if(this.formAddCollaborator.valid){
-      const {name,  email, password, role } = this.formAddCollaborator.value;
+      const {name, email, password, phone, role } = this.formAddCollaborator.value;
+
+      const collaborator: Collaborator = {
+        name,
+        email,
+        password,
+        phone,
+        access: true,
+        role
+      }
 
       try{
-        await this.collaboratorService.addCollaborator(this.userId, name, email, password, role);
+        await this.collaboratorService.addCollaborator(collaborator, this.userId);
         this.loadCollaborators();
         this.formAddCollaborator.reset();
       } catch(error){
