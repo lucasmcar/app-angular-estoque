@@ -1,0 +1,15 @@
+.fab-button {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+}
+
+.header-container {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Centraliza o texto e o botão horizontalmente */
+}
+
+.header-container span {
+  margin-right: 8px; /* Adiciona espaço entre o texto e o ícone */
+}

@@ -1,11 +1,20 @@
-<mat-toolbar>
-  <span>Bem-vindo,</span>
+<mat-toolbar color="primary">
+  <span>Bem-vindo, {{ userProfile }}</span>
   <span class="spacer"></span>
 
-  <button routerLink="/register/profile" mat-icon-button>
+  <button *ngIf="isAdmin" routerLink="/register/profile" mat-icon-button>
     <mat-icon>person_add</mat-icon>
 
   </button>
+
+  <button *ngIf="isAdmin" routerLink="/settings" mat-icon-button>
+    <mat-icon>settings</mat-icon>
+  </button>
+
+  <button *ngIf="isAdmin" routerLink="/logs" mat-icon-button>
+    <mat-icon>assignment</mat-icon>
+  </button>
+
 
   <button (click)="signOut();" mat-icon-button class="example-icon favorite-icon"
     aria-label="Example icon-button with heart icon">
@@ -21,7 +30,7 @@
       Registre e veja aqui as tintas em estoque ou que estão em falta
     </mat-card-content>
     <mat-card-actions>
-      <a mat-button routerLink="/tints">Acessar</a>
+      <a mat-button routerLink="/carpaints">Acessar</a>
     </mat-card-actions>
   </mat-card>
 
@@ -35,8 +44,29 @@
     </mat-card-actions>
   </mat-card>
 
+
+
+      <mat-card *ngIf="!isLoading && isAdmin" >
+        <mat-toolbar>Colaborador</mat-toolbar>
+        <mat-card-content>
+          Registre os colaboradores, visualize e altere as permissões para uso no sistema
+        </mat-card-content>
+        <mat-card-actions>
+          <a mat-button routerLink="/collaborators">Acessar</a>
+        </mat-card-actions>
+      </mat-card>
+
+
   <mat-card>
-    Conteudo 1
+    <mat-toolbar>Serviços</mat-toolbar>
+    <mat-card-content>
+      Registre os Serviços
+    </mat-card-content>
+    <mat-card-actions>
+      <a mat-button routerLink="/services">Acessar</a>
+    </mat-card-actions>
   </mat-card>
+
+
 
 </div>

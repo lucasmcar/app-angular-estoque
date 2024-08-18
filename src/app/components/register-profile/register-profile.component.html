@@ -1,5 +1,5 @@
 <mat-toolbar>
-  <button mat-icon-button routerLink="/service-list"><mat-icon>arrow_back</mat-icon></button>
+  <button mat-icon-button routerLink="/dashboard"><mat-icon>arrow_back</mat-icon></button>
   <span>Criar perfil</span>
   <span class="spacer"></span>
 </mat-toolbar>
@@ -17,7 +17,7 @@
     </mat-form-field>
     <mat-form-field>
         <mat-label>Telefone</mat-label>
-        <input formControlName="phone" matInput placeholder="Fone" />
+        <input mask="(00) 0 0000-0000" formControlName="phone" matInput placeholder="Fone" />
 
     </mat-form-field>
 

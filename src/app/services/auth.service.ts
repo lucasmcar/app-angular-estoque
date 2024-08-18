@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { getApp } from 'firebase/app';
-import { getAuth, createUserWithEmailAndPassword, User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword} from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, User as FirebaseUser, onAuthStateChanged, signInWithEmailAndPassword, signOut} from 'firebase/auth';
 import { getFirestore, doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogComponent } from '../shared/dialog/dialog/dialog.component';
 import { DialogErrorComponent } from '../shared/dialog/dialog-error/dialog-error.component';
 import { DialogSuccessComponent } from '../shared/dialog/dialog-success/dialog-success.component';
+
 
 @Injectable({
   providedIn: 'root'
@@ -34,51 +35,90 @@ export class AuthService {
 
   login(email: string, password: string) {
     const dialogRef = this.dialog.open(DialogComponent, {
+      data : {
+        text : 'Acessando perfil'
+      },
       disableClose: true
     });
     return signInWithEmailAndPassword(this.auth, email, password)
-    .then((result) => {
-      dialogRef.close();
-      return result;
+    .then(async (result) => {
+      const user = result.user;
+
+      const userDocRef = doc(this.firestore, 'collaborators', user.uid);
+      const userDoc = await getDoc(userDocRef);
+
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+
+        // Verifica se o campo 'access' está definido e é verdadeiro
+        if (userData['access'] === false) {
+          console.log(userData['access']);
+          this.showErrorDialog("Erro!","Usuário não permitido");
+          dialogRef.close();
+          return null;
+        }
+        // Se 'access' não estiver definido, considera que o usuário é um administrador
+        dialogRef.close();
+        return result;
+      } else {
+        // Caso o documento não exista, considera que o usuário é um administrador
+        dialogRef.close();
+        return result;
+      }
     }).catch((error) =>{
-      this.showErrorDialog("Usuário ou senha inválidos");
+      this.showErrorDialog("Ops! Algo deu errado!", "Usuário ou senha inválidos");
       dialogRef.close();
     });
   }
 
   signUp(email: string, password: string){
     const dialogRef =  this.dialog.open(DialogComponent, {
+      data: {
+        text: "Criando conta..."
+      },
       disableClose: true
     });
     return createUserWithEmailAndPassword(this.auth, email, password)
     .then((result) =>{
-        this.showSuccessDialog("Usuário cadastro com sucesso")
+        this.showSuccessDialog("Sucesso!","Usuário cadastro com sucesso")
         dialogRef.close();
         return result;
     }).catch((error) =>{
-      this.showErrorDialog("Não foi possível cadastrar");
+      this.showErrorDialog("Ops! Algo deu errado!","Não foi possível cadastrar");
       dialogRef.close();
     })
 
   }
 
-  private showErrorDialog(errorMessage: string): void {
+  signOut(){
+    const dialogRef =  this.dialog.open(DialogComponent, {
+      data : {
+        text : 'Saindo...'
+      },
+      disableClose: true
+    });
+    return signOut(this.auth).then((result) => {
+      dialogRef.close();
+    }).catch(error => console.error('Error', error));
+  }
+
+  private showErrorDialog(title: string, errorMessage: string): void {
     this.dialog.open(DialogErrorComponent, {
-      data: { errorMessage }
+      data: {title, errorMessage }
     });
   }
 
-  private showSuccessDialog(successMsg: string): void{
+  private showSuccessDialog(title: string, successMsg: string): void{
     this.dialog.open(DialogSuccessComponent, {
-      data: { successMsg }
+      data: {title,  successMsg }
     })
   }
 
 
-  getUser() : Promise<FirebaseUser | null>{
+  async getUser() : Promise<FirebaseUser | null>{
     return new Promise((resolve) => {
       onAuthStateChanged(this.auth, (user) => {
-        resolve(user)
+          resolve(user);
       });
     });
   }

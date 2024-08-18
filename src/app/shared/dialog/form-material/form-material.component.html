@@ -1,0 +1,31 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+<mat-dialog-content>
+  <form [formGroup]="formAddMaterial" (ngSubmit)="addMaterial()"
+    style="display: flex; flex-direction: column; padding: 16px;">
+    <mat-form-field>
+      <mat-label>Grupo de Material:</mat-label>
+      <input matInput formControlName="materialGroup" required>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Nome do material:</mat-label>
+      <input matInput formControlName="materialName" required>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Categoria:</mat-label>
+      <input matInput formControlName="materialCategory" required>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Quantidade:</mat-label>
+      <input matInput formControlName="quantity">
+    </mat-form-field>
+
+
+    <button mat-raised-button color="primary" type="submit">Salvar Material</button>
+    <button mat-raised-button type="button" (click)="cancel()">Cancelar</button>
+  </form>
+
+</mat-dialog-content>
+

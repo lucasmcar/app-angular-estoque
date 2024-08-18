@@ -1,7 +1,9 @@
+import { ApiKeys } from "../keys/apis-keys";
+
 export const environment = {
   production: false,
   firebase: {
-    apiKey: "AIzaSyBmoALCy3AqWbhTNqM9wEPnjP8T4uifwAw",
+    apiKey: ApiKeys.firebase_token,
     authDomain: "as-stock-c0202.firebaseapp.com",
     projectId: "as-stock-c0202",
     storageBucket: "as-stock-c0202.appspot.com",

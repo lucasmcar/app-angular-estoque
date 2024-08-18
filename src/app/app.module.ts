@@ -18,7 +18,13 @@ import { DialogSuccessComponent } from './shared/dialog/dialog-success/dialog-su
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { RegisterProfileComponent } from './components/register-profile/register-profile.component';
 
-
+import { NgxMaskDirective, NgxMaskPipe, provideNgxMask } from 'ngx-mask';
+import { CollaboratorsComponent } from './components/collaborators/collaborators.component';
+import { CarPaintsComponent } from './components/car-paints/car-paints.component';
+import { FormDialogComponent } from './shared/dialog/form-dialog/form-dialog.component';
+import { MaterialsComponent } from './components/materials/materials.component';
+import { FormMaterialComponent } from './shared/dialog/form-material/form-material.component';
+import { LogComponent } from './components/log/log.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +35,13 @@ import { RegisterProfileComponent } from './components/register-profile/register
     RegisterUserComponent,
     DialogSuccessComponent,
     DashboardComponent,
-    RegisterProfileComponent
+    RegisterProfileComponent,
+    CollaboratorsComponent,
+    CarPaintsComponent,
+    FormDialogComponent,
+    MaterialsComponent,
+    FormMaterialComponent,
+    LogComponent
   ],
   imports: [
     BrowserModule,
@@ -38,6 +50,9 @@ import { RegisterProfileComponent } from './components/register-profile/register
     RouterModule,
     ReactiveFormsModule,
     HttpClientModule,
+    NgxMaskDirective,
+    NgxMaskPipe,
+
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: !isDevMode(),
       // Register the ServiceWorker as soon as the application is stable
@@ -50,6 +65,7 @@ import { RegisterProfileComponent } from './components/register-profile/register
   providers: [
     provideClientHydration(),
     provideAnimationsAsync(),
+    provideNgxMask({})
     //provideHttpClient(withFetch())
   ],
   bootstrap: [AppComponent]
