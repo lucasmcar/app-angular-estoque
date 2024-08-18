@@ -1,12 +1,14 @@
 import { Injectable } from '@angular/core';
 import { getApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, getDocs, getFirestore, increment, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, where } from 'firebase/firestore';
-import { BehaviorSubject, from, map, Observable } from 'rxjs';
+import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, getDocs, getFirestore, increment, onSnapshot, orderBy, query, serverTimestamp, setDoc, Timestamp, updateDoc, where, writeBatch } from 'firebase/firestore';
+import { async, BehaviorSubject, from, map, Observable } from 'rxjs';
 import { MaterialUsageLog } from '../models/material-usage-log';
 import { PaintCarUsageLog } from '../models/paint-car-usage-log';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogComponent } from '../shared/dialog/dialog/dialog.component';
+import { DialogErrorComponent } from '../shared/dialog/dialog-error/dialog-error.component';
+import { DialogSuccessComponent } from '../shared/dialog/dialog-success/dialog-success.component';
 
 @Injectable({
   providedIn: 'root'
@@ -40,16 +42,16 @@ export class LogService {
     const usageLog: MaterialUsageLog = {
       materialId: docSnapshot.id,
       materialName: docSnapshot.data()['materialName'],
-      type: 'material',
+      type: 'Material',
       usedBy,
-      usedAt: (docSnapshot.data()['createdAt'] as Timestamp).toDate(),
+      usedAt: serverTimestamp(),
       quantityUsed: 1
     };
 
     await addDoc(collection(this.firestore, 'materialUsageLogs'), usageLog);
 }
 
-  getMaterialUsageLogs(): Observable<MaterialUsageLog[]> {
+  getMaterialUsageLogs(orderByField: string, orderDirection:'asc' | 'desc' = 'asc'): Observable<MaterialUsageLog[]> {
     const dialogRef = this.dialog.open(DialogComponent, {
       data: {
         text: 'Carregando dados'
@@ -57,56 +59,80 @@ export class LogService {
       disableClose: true
     });
     const usageLogsCollection = this.db;
-    return from(getDocs(usageLogsCollection).then(snapshot => {
-      dialogRef.close();
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()
-      } as unknown as MaterialUsageLog));
-    }));
-
-    /*return from(getDocs(usageLogsCollection)).pipe(
-      map(snapshot => snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as MaterialUsageLog)))
-    );*/
-  }
-
-  async logPaintCarUsage(carPaintsId: string, colorName: string, usedBy: string, quantityUsed: number) {
-    try {
-      const usageLog: PaintCarUsageLog = {
-        carPaintsId,
-        colorName,
-        usedBy,
-        usedAt: serverTimestamp(),
-        quantityUsed
-      };
-
-      // Salvar o log no Firebase
-      await addDoc(collection(this.firestore, 'paintCarUsageLogs'), usageLog);
-
-      // Atualizar a quantidade do material no estoque
-      const materialDocRef = doc(this.firestore, 'carpaints', carPaintsId);
-      await updateDoc(materialDocRef, {
-        quantity: increment(-quantityUsed)
+    const usagelogsQuery = query(usageLogsCollection, orderBy(orderByField, orderDirection));
+    return new Observable<any[]>(observer => {
+      const unsubscribe = onSnapshot(usagelogsQuery, snapshot => {
+        dialogRef.close();
+        const materials = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as MaterialUsageLog));
+        console.log(materials)
+        observer.next(materials);  // Emite os dados atualizados para os observadores
+      }, error => {
+        dialogRef.close();
+        observer.error(error);  // Emite um erro se ocorrer algum problema
       });
 
-    } catch (error) {
-      console.error('Erro ao registrar o uso do material:', error);
-    }
+      // Retorna a função de limpeza (unsubscribe) para parar de escutar as mudanças quando o Observable for destruído
+      return () => unsubscribe();
+
+    });
   }
 
 
   async saveCarPaintLog(docSnapshot: any, usedBy: string ){
-    console.log(docSnapshot.data())
     const usageLog: MaterialUsageLog = {
       materialId: docSnapshot.id,
       materialName: docSnapshot.data()['colorName'],
-      type: 'carpaints',
+      type: 'Tintas',
       usedBy: usedBy,
-      usedAt: (docSnapshot.data()['createdAt'] as Timestamp).toDate(),
+      usedAt: serverTimestamp(),
       quantityUsed: 1
     };
 
     // Adicionar o registro de uso na coleção "materialUsageLogs"
     await addDoc(collection(this.firestore, 'materialUsageLogs'), usageLog);
   }
+
+  async clearLogs(): Promise<void> {
+    const dialogRef = this.dialog.open(DialogComponent, {
+        data: {
+            text: 'Removendo logs...'
+        },
+        disableClose: true
+    });
+
+    try {
+        const usageLogsCollection = this.db;
+        const querySnapshot = await getDocs(usageLogsCollection);
+
+        // Loop através dos documentos e deletá-los
+        const batch = writeBatch(this.firestore);
+        querySnapshot.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+
+        await batch.commit();
+
+        this.showSuccessDialog('Sucesso', 'Todos os logs foram removidos.');
+    } catch (error) {
+        console.error('Erro ao remover logs: ', error);
+        this.showErrorDialog('Erro', 'Não foi possível remover os logs.');
+    } finally {
+        dialogRef.close();
+    }
+}
+
+private showErrorDialog(title: string, errorMessage: string): void {
+  this.dialog.open(DialogErrorComponent, {
+    data: { title, errorMessage }
+  });
+}
+
+private showSuccessDialog(title: string, successMsg: string): void {
+  this.dialog.open(DialogSuccessComponent, {
+    data: { title, successMsg }
+  })
+}
+
 
 
 }

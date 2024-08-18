@@ -65,7 +65,7 @@ export class MaterialsService {
 
       if (!querySnapshot.empty) {
         // Material já existe, incrementar a quantidade
-        const materialDoc = querySnapshot.docs[0];  // Se nome  da tinta é único
+        const materialDoc = querySnapshot.docs[0];  // Se nome  do material é único
         const existingData = materialDoc.data();
 
         // Atualizar a quantidade
