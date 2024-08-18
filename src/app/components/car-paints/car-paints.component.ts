@@ -22,7 +22,7 @@ import { UserService } from '../../services/user.service';
 export class CarPaintsComponent implements OnInit {
 
   carPaints: any[] = [];
-  userId: string | undefined;
+  userId: any | undefined;
   displayedColumns: string[] = ['colorGroup', 'colorName', 'code', 'quantity', 'brand', 'actions'];
   currentSortDirection: 'asc' | 'desc' = 'asc';
   currentSortColumn: string = '';
@@ -60,9 +60,6 @@ export class CarPaintsComponent implements OnInit {
           this.userRole = collaboratorProfile!['role'];
           this.isAdmin = !collaboratorProfile!['role'];
           this.userProfile = collaboratorProfile!['name'];
-
-
-
         }
       }
       this.isLoading = false;
@@ -120,9 +117,13 @@ export class CarPaintsComponent implements OnInit {
 
   useCarPaint(paint: any): void {
     if (paint.quantity > 0) {
-      this.carPaintService.useCarPaint(paint.code, paint.quantity - 1).then(() => {
-        if (paint.quantity - 1 === 0) {
+      const newQuantity = paint.quantity - 1;
+
+      this.carPaintService.useCarPaint(paint.code, newQuantity, this.userProfile).then(() => {
+        if (newQuantity === 0) {
           paint.quantity = 'Em falta';
+        } else {
+          paint.quantity = newQuantity;
         }
         this.refreshData();
       });

@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 import { DataRefreshService } from '../../services/data-refresh.service';
 import { Materials } from '../../models/materials';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { LogService } from '../../services/log.service';
 
 @Component({
   selector: 'app-materials',
@@ -33,8 +34,8 @@ export class MaterialsComponent implements OnInit {
   dataSource = new MatTableDataSource<any>([]);
   @ViewChild(MatPaginator) paginator: MatPaginator | any;
   @ViewChild(MatSort) sort: MatSort | any;
-  displayedColumns : string[] = ['materialGroup', 'materialName', 'materialCategory', 'quantity', 'actions'];
-  editForm : FormGroup;
+  displayedColumns: string[] = ['materialGroup', 'materialName', 'materialCategory', 'quantity', 'actions'];
+  editForm: FormGroup;
   editIndex: number | null = null;
 
 
@@ -44,10 +45,11 @@ export class MaterialsComponent implements OnInit {
     private userService: UserService,
     private collaboratorService: CollaboratorsService,
     private auth: AuthService,
+    private materialLog: LogService,
     private router: Router,
     private dataRefreshService: DataRefreshService,
     private fb: FormBuilder
-  ){
+  ) {
     this.editForm = this.fb.group({
       materialName: ['']
     });
@@ -56,10 +58,10 @@ export class MaterialsComponent implements OnInit {
 
   async ngOnInit() {
     this.getListMaterial('materialName', this.currentSortDirection);
-    this.userService.user$.subscribe(async (user) =>{
-      if(user){
+    this.userService.user$.subscribe(async (user) => {
+      if (user) {
         const userProfile = await this.userService.getUserProfile(user.uid);
-        if(userProfile && userProfile['companyName']){
+        if (userProfile && userProfile['companyName']) {
           this.userProfile = userProfile['companyName'];
           this.isAdmin = true;
 
@@ -75,20 +77,20 @@ export class MaterialsComponent implements OnInit {
       }
       this.isLoading = false;
     })
-      try {
-        const user: FirebaseUser | null = await this.auth.getUser();
-        if (user) {
-          this.userId = user.uid;
-        } else {
-          this.router.navigate(['/login']); // Redireciona para a página de login se o usuário não estiver logado
-        }
-      } catch (error) {
+    try {
+      const user: FirebaseUser | null = await this.auth.getUser();
+      if (user) {
+        this.userId = user.uid;
+      } else {
+        this.router.navigate(['/login']); // Redireciona para a página de login se o usuário não estiver logado
+      }
+    } catch (error) {
       console.error('Error fetching user', error);
+    }
+    this.dataRefreshService.refresh$.subscribe(() => {
+      this.getListMaterial('materialName', this.currentSortDirection);
+    });
   }
-  this.dataRefreshService.refresh$.subscribe(() => {
-    this.getListMaterial('materialName', this.currentSortDirection);
-  });
-}
 
   getListMaterial(orderByField: string = '', orderDirection: 'asc' | 'desc' = 'asc'): void {
     this.materialService.getMaterials(orderByField, orderDirection).subscribe(materials => {
@@ -104,9 +106,9 @@ export class MaterialsComponent implements OnInit {
   saveEdit(id: string) {
     if (this.editForm.valid) {
 
-      const {materialName} = this.editForm.value;
+      const { materialName } = this.editForm.value;
 
-      const material : Materials = {
+      const material: Materials = {
         materialName: materialName
       }
 
@@ -117,11 +119,22 @@ export class MaterialsComponent implements OnInit {
     }
   }
 
+  async useMaterial(material: any) {
+    if (material.quantity > 0) {
+      const newQuantity = material.quantity - 1;
 
+      this.materialService.useMaterial(material.materialName, newQuantity, this.userProfile).then(() => {
+        if (newQuantity === 0) {
+          material.quantity = 'Em falta';
+        } else {
+          material.quantity = newQuantity;
+        }
+        this.refreshData();
+      });
+    }
+  }
 
-
-
-  openFab(){
+  openFab() {
     const dialogRef = this.dialog.open(FormMaterialComponent, {
       data: {
         title: 'Cadastro de tintas'
@@ -130,9 +143,12 @@ export class MaterialsComponent implements OnInit {
     });
   }
 
+  refreshData(): void {
+    this.getListMaterial(this.currentSortColumn, this.currentSortDirection);
+  }
   //Métodos de modificação e visualização da lista
 
-  removeMaterial(materialName: string){
+  removeMaterial(materialName: string) {
     return this.materialService.removeMaterial(materialName).then(() => {
       this.getListMaterial('materialName', 'asc');
     });
@@ -158,7 +174,7 @@ export class MaterialsComponent implements OnInit {
       this.currentSortDirection = 'asc';
     }
 
-    //this.getListColors(columnName, this.currentSortDirection);
+    this.getListMaterial(columnName, this.currentSortDirection);
   }
 
   getSortIcon(columnName: string): string {
@@ -167,8 +183,6 @@ export class MaterialsComponent implements OnInit {
     }
     return 'unfold_more';
   }
-
-  useMaterial(material: Materials){}
 
 
 }

@@ -3,13 +3,14 @@ import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { getApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, getDocs, getFirestore, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, onSnapshot, Firestore, getDoc, getDocs, getFirestore, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { DialogComponent } from '../shared/dialog/dialog/dialog.component';
 import { DialogErrorComponent } from '../shared/dialog/dialog-error/dialog-error.component';
 import { DialogSuccessComponent } from '../shared/dialog/dialog-success/dialog-success.component';
 import { DataRefreshService } from './data-refresh.service';
 import { Materials } from '../models/materials';
+import { LogService } from './log.service';
 
 @Injectable({
   providedIn: 'root'
@@ -23,7 +24,11 @@ export class MaterialsService {
   private userSubject = new BehaviorSubject<FirebaseUser| null>(null);
 
 
-  constructor(private dialog: MatDialog, private dataRefreshService: DataRefreshService,) {
+  constructor(
+    private dialog: MatDialog,
+    private dataRefreshService: DataRefreshService,
+    private logService: LogService
+  ) {
 
     this.app =  getApp();
     this.auth = getAuth();
@@ -59,7 +64,7 @@ export class MaterialsService {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        // Tinta já existe, incrementar a quantidade
+        // Material já existe, incrementar a quantidade
         const materialDoc = querySnapshot.docs[0];  // Se nome  da tinta é único
         const existingData = materialDoc.data();
 
@@ -70,7 +75,7 @@ export class MaterialsService {
         await updateDoc(materialDoc.ref, { quantity: newQuantity });
 
       } else {
-        // Tinta não existe, criar um novo documento
+        // Material não existe, criar um novo documento
         await addDoc(materialsCollection, {
           ...material,
           createdBy: userId,
@@ -96,13 +101,27 @@ export class MaterialsService {
       disableClose: true
     });
     const materialCollection = this.db;
-    const carPaintsQuery = query(materialCollection, orderBy(orderByField, orderDirection));
+    const materialsQuery = query(materialCollection, orderBy(orderByField, orderDirection));
 
-    return from(getDocs(carPaintsQuery).then(snapshot => {
+    return new Observable<any[]>(observer => {
+      const unsubscribe = onSnapshot(materialsQuery, snapshot => {
+        dialogRef.close();
+        const materials = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        observer.next(materials);  // Emite os dados atualizados para os observadores
+      }, error => {
+        dialogRef.close();
+        observer.error(error);  // Emite um erro se ocorrer algum problema
+      });
+
+      // Retorna a função de limpeza (unsubscribe) para parar de escutar as mudanças quando o Observable for destruído
+      return () => unsubscribe();
+    });
+
+    /*return from(getDocs(carPaintsQuery).then(snapshot => {
       dialogRef.close();
       return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()
       }));
-    }));
+    }));*/
   }
 
   updateMaterial(id: string, material: any): Observable<void> {
@@ -151,7 +170,29 @@ export class MaterialsService {
       });
   }
 
-  useMaterial(){}
+  async useMaterial(materialName: string, newQuantity: number, usedBy: string){
+    const q = query(this.db, where("materialName", "==", materialName));
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      const docSnapshot = querySnapshot.docs[0];
+      const userDocRef = doc(this.db, docSnapshot.id);
+
+      // Atualizar a quantidade no documento
+      await setDoc(userDocRef, { quantity: newQuantity }, { merge: true });
+
+      // Registrar o uso do material
+      /*onst usageLog: MaterialUsageLog = {
+        materialId: docSnapshot.id,
+        materialName: docSnapshot.data()['colorName'],
+        usedBy: usedBy,
+        usedAt: serverTimestamp(),
+        quantityUsed: 1
+      };*/
+
+      await this.logService.logMaterialUsage(docSnapshot, usedBy);
+  }
+}
 
 
   private showErrorDialog(title: string, errorMessage: string): void {

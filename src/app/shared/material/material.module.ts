@@ -12,8 +12,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatSelectModule } from '@angular/material/select';
-import {MatTableModule} from '@angular/material/table';
-import {MatPaginatorModule} from '@angular/material/paginator';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatRadioModule } from '@angular/material/radio';
+import { FormsModule } from '@angular/forms';
+import {MatTooltipModule} from '@angular/material/tooltip';
+
 @NgModule({
   declarations: [],
   imports: [
@@ -33,7 +37,10 @@ import {MatPaginatorModule} from '@angular/material/paginator';
     MatTabsModule,
     MatSelectModule,
     MatTableModule,
-    MatPaginatorModule
+    MatPaginatorModule,
+    MatRadioModule,
+    FormsModule,
+    MatTooltipModule
   ]
 })
 export class MaterialModule { }

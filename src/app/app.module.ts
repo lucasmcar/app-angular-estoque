@@ -24,6 +24,7 @@ import { CarPaintsComponent } from './components/car-paints/car-paints.component
 import { FormDialogComponent } from './shared/dialog/form-dialog/form-dialog.component';
 import { MaterialsComponent } from './components/materials/materials.component';
 import { FormMaterialComponent } from './shared/dialog/form-material/form-material.component';
+import { LogComponent } from './components/log/log.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { FormMaterialComponent } from './shared/dialog/form-material/form-materi
     CarPaintsComponent,
     FormDialogComponent,
     MaterialsComponent,
-    FormMaterialComponent
+    FormMaterialComponent,
+    LogComponent
   ],
   imports: [
     BrowserModule,

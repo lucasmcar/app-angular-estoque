@@ -2,10 +2,19 @@
   <span>Bem-vindo, {{ userProfile }}</span>
   <span class="spacer"></span>
 
-  <button routerLink="/register/profile" mat-icon-button>
+  <button *ngIf="isAdmin" routerLink="/register/profile" mat-icon-button>
     <mat-icon>person_add</mat-icon>
 
   </button>
+
+  <button *ngIf="isAdmin" routerLink="/settings" mat-icon-button>
+    <mat-icon>settings</mat-icon>
+  </button>
+
+  <button *ngIf="isAdmin" routerLink="/logs" mat-icon-button>
+    <mat-icon>assignment</mat-icon>
+  </button>
+
 
   <button (click)="signOut();" mat-icon-button class="example-icon favorite-icon"
     aria-label="Example icon-button with heart icon">
@@ -46,7 +55,7 @@
           <a mat-button routerLink="/collaborators">Acessar</a>
         </mat-card-actions>
       </mat-card>
-    
+
 
   <mat-card>
     <mat-toolbar>Serviços</mat-toolbar>

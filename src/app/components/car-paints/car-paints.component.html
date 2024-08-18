@@ -30,7 +30,7 @@
 
       <ng-container matColumnDef="quantity">
         <th mat-header-cell *matHeaderCellDef>Quantidade</th>
-        <td mat-cell *matCellDef="let carpaint">{{ carpaint.quantity }}</td>
+        <td mat-cell *matCellDef="let carpaint">{{ carpaint.quantity == 0 ? 'Em Falta': carpaint.quantity }}</td>
       </ng-container>
 
       <ng-container matColumnDef="brand">

@@ -2,13 +2,15 @@ import { Injectable } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { getApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
-import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, getDocs, getFirestore, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
+import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
 import { BehaviorSubject, from, Observable } from 'rxjs';
 import { DialogComponent } from '../shared/dialog/dialog/dialog.component';
 import { DialogErrorComponent } from '../shared/dialog/dialog-error/dialog-error.component';
 import { DialogSuccessComponent } from '../shared/dialog/dialog-success/dialog-success.component';
 import { DataRefreshService } from './data-refresh.service';
 import { SendNotificationService } from './send-notification.service';
+
+import { LogService } from './log.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,15 +21,16 @@ export class CarPaintsService {
   private firestore;
   private app;
   private db;
-  private userSubject = new BehaviorSubject<FirebaseUser| null>(null);
+  private userSubject = new BehaviorSubject<FirebaseUser | null>(null);
 
   constructor(
     private dialog: MatDialog,
     private dataRefreshService: DataRefreshService,
-    private whatsapp: SendNotificationService
+    private whatsapp: SendNotificationService,
+    private logService: LogService
   ) {
 
-    this.app =  getApp();
+    this.app = getApp();
     this.auth = getAuth();
     this.firestore = getFirestore(this.app);
 
@@ -44,8 +47,8 @@ export class CarPaintsService {
   }
 
   getCarPaints(orderByField: string, orderDirection: 'asc' | 'desc' = 'asc'): Observable<any[]> {
-    const dialogRef = this.dialog.open(DialogComponent,{
-      data :{
+    const dialogRef = this.dialog.open(DialogComponent, {
+      data: {
         text: 'Carregando dados'
       },
       disableClose: true
@@ -53,106 +56,80 @@ export class CarPaintsService {
     const carPaintsCollection = collection(this.firestore, 'carpaints');
     const carPaintsQuery = query(carPaintsCollection, orderBy(orderByField, orderDirection));
 
-    return from(getDocs(carPaintsQuery).then(snapshot => {
-      dialogRef.close();
-      return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data()
-      }));
-    }));
+    return new Observable<any[]>(observer => {
+      const unsubscribe = onSnapshot(carPaintsQuery, snapshot => {
+        dialogRef.close();
+        const materials = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        observer.next(materials);  // Emite os dados atualizados para os observadores
+      }, error => {
+        dialogRef.close();
+        observer.error(error);  // Emite um erro se ocorrer algum problema
+      });
+
+      // Retorna a função de limpeza (unsubscribe) para parar de escutar as mudanças quando o Observable for destruído
+      return () => unsubscribe();
+    });
   }
 
-  /*async addCarPaints(colorGroup: string, colorName: string, code: string, quantity: string, brand: string, userId: string){
 
+
+  async addOrUpdateCarPaint(colorGroup: string, colorName: string, code: string, quantity: string, brand: string, userId: string): Promise<void> {
     const dialogRef = this.dialog.open(DialogComponent, {
       data: {
-        text: 'Adicionando nova tinta...'
+        text: 'Salvando dados...'
       },
       disableClose: true
-    })
+    });
 
+    try {
+      // Referência à coleção de tintas
+      const carPaintsCollection = collection(this.firestore, 'carpaints');
 
-    const carPaints = {
-      colorGroup,
-      colorName,
-      code,
-      quantity,
-      brand,
-      uid: userId,
-      createdAt: serverTimestamp()
-    };
-    await addDoc(collection(this.firestore, 'carpaints'), carPaints)
-      .then((result) => {
-        this.showSuccessDialog('Sucesso', 'Tinta cadastrada com sucesso');
+      // Query para verificar se já existe uma tinta com o mesmo nome
+      const q = query(carPaintsCollection, where('colorName', '==', colorName));
+      const querySnapshot = await getDocs(q);
 
-        const collaboratorPhoneNumber = '+5551996699337'; // Número de telefone do colaborador (com o código do país)
-        const message = `Uma nova tinta foi adicionada: ${carPaints.colorName} (${carPaints.code})`;
-        //this.whatsapp.sendWhatsAppMessage(collaboratorPhoneNumber, message);
-        dialogRef.close();
-        this.dataRefreshService.triggerRefresh();
-        return result;
-      }).catch((error) => {
-        this.showErrorDialog('Ops! algi deu errado', 'Erro ao cadastrar perfil');
-        dialogRef.close();
-        throw error;
-      });
-  }*/
+      if (!querySnapshot.empty) {
+        // Tinta já existe, incrementar a quantidade
+        const carPaintDoc = querySnapshot.docs[0];  // Assumindo que o nome da tinta é único
+        const existingData = carPaintDoc.data();
 
-      async addOrUpdateCarPaint(colorGroup: string, colorName: string, code: string, quantity: string, brand: string, userId: string): Promise<void> {
-        const dialogRef = this.dialog.open(DialogComponent, {
-          data: {
-            text: 'Salvando dados...'
-          },
-          disableClose: true
+        // Atualizar a quantidade
+        const newQuantity = (existingData['quantity'] || 0) + 1;
+
+        // Atualizar o documento no Firebase
+        await updateDoc(carPaintDoc.ref, { quantity: newQuantity });
+
+      } else {
+        // Tinta não existe, criar um novo documento
+        await addDoc(carPaintsCollection, {
+          colorGroup,
+          colorName,
+          code,
+          brand,
+          quantity : quantity,
+          createdBy: userId,
+          createdAt: serverTimestamp()
         });
-
-        try {
-          // Referência à coleção de tintas
-          const carPaintsCollection = collection(this.firestore, 'carpaints');
-
-          // Query para verificar se já existe uma tinta com o mesmo nome
-          const q = query(carPaintsCollection, where('colorName', '==', colorName));
-          const querySnapshot = await getDocs(q);
-
-          if (!querySnapshot.empty) {
-            // Tinta já existe, incrementar a quantidade
-            const carPaintDoc = querySnapshot.docs[0];  // Assumindo que o nome da tinta é único
-            const existingData = carPaintDoc.data();
-
-            // Atualizar a quantidade
-            const newQuantity = (existingData['quantity'] || 0) + 1;
-
-            // Atualizar o documento no Firebase
-            await updateDoc(carPaintDoc.ref, { quantity: newQuantity });
-
-          } else {
-            // Tinta não existe, criar um novo documento
-            await addDoc(carPaintsCollection, {
-              colorGroup,
-              colorName,
-              code,
-              brand,
-              quantity,  // Começa com 1 unidade
-              createdBy: userId,
-              createdAt: serverTimestamp()
-            });
-          }
-
-          this.showSuccessDialog('Sucesso', 'Tinta salva com sucesso!');
-          this.dataRefreshService.triggerRefresh();
-        } catch (error) {
-          console.error('Erro ao salvar tinta: ', error);
-          this.showErrorDialog('Erro', 'Não foi possível salvar a tinta.');
-        } finally {
-          dialogRef.close();
-        }
       }
 
-  updateCarPaints(){}
+      this.showSuccessDialog('Sucesso', 'Tinta salva com sucesso!');
+      this.dataRefreshService.triggerRefresh();
+    } catch (error) {
+      console.error('Erro ao salvar tinta: ', error);
+      this.showErrorDialog('Erro', 'Não foi possível salvar a tinta.');
+    } finally {
+      dialogRef.close();
+    }
+  }
+
+  updateCarPaints() { }
 
 
   async removeCarPaints(code: string) {
     const dialogRef = this.dialog.open(DialogComponent, {
-      data :{
-        text : 'Removendo tinta...'
+      data: {
+        text: 'Removendo tinta...'
       },
       disableClose: true
     });
@@ -183,18 +160,25 @@ export class CarPaintsService {
     });
   }
 
-  private showSuccessDialog(title: string,  successMsg: string): void {
+  private showSuccessDialog(title: string, successMsg: string): void {
     this.dialog.open(DialogSuccessComponent, {
       data: { title, successMsg }
     })
   }
 
-  async useCarPaint(code: string, newQuantity: number): Promise<void> {
+  async useCarPaint(code: string, newQuantity: number, usedBy: string): Promise<void> {
     const q = query(this.db, where("code", "==", code));
-    return getDocs(q).then(querySnapshot => {
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
       const docSnapshot = querySnapshot.docs[0];
       const userDocRef = doc(this.db, docSnapshot.id);
-      return setDoc(userDocRef, { quantity: newQuantity }, { merge: true });
-    });
+
+      // Atualizar a quantidade no documento
+      await setDoc(userDocRef, { quantity: newQuantity }, { merge: true });
+
+      await this.logService.saveCarPaintLog(docSnapshot, usedBy);
+
+    }
   }
 }

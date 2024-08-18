@@ -36,6 +36,11 @@ const routes: Routes = [
     .then(m => m.CarPaintsModule)
   },
   {
+    path: 'logs',
+    loadChildren: () => import('./components/log/log/log.module')
+    .then(m => m.LogModule)
+  },
+  {
     path: 'register/profile',
     loadChildren: ()=>import('./components/register-profile/profile/profile.module')
     .then(m => m.ProfileModule)

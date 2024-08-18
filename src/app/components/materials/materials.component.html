@@ -24,24 +24,15 @@
         </th>
         <td mat-cell *matCellDef="let material; let i = index">
           <div [formGroup]="editForm">
-          <ng-container *ngIf="editIndex === i; else readMaterial">
-            <input matInput [formControlName]="'materialName'">
-          </ng-container>
+            <ng-container *ngIf="editIndex === i; else readMaterial">
+              <input matInput [formControlName]="'materialName'">
+            </ng-container>
           </div>
           <ng-template #readMaterial>
             {{material.materialName}}
           </ng-template>
         </td>
       </ng-container>
-
-      <!--<ng-container matColumnDef="materialName">
-        <th mat-header-cell *matHeaderCellDef class="spacer">Material
-          <button mat-icon-button (click)="reagrupar('materialName')">
-            <mat-icon>{{ getSortIcon('materialName') }}</mat-icon>
-          </button>
-        </th>
-        <td mat-cell *matCellDef="let material">{{ material.materialName }}</td>
-      </ng-container>-->
 
       <ng-container matColumnDef="materialCategory">
         <th mat-header-cell *matHeaderCellDef>Categoria</th>
@@ -53,30 +44,30 @@
         <td mat-cell *matCellDef="let material">{{ material.quantity }}</td>
       </ng-container>
 
-      <!--<ng-container matColumnDef="brand">
 
-        <th mat-header-cell *matHeaderCellDef>
-          Marca <button mat-icon-button (click)="reagrupar('brand')">
-            <mat-icon>{{ getSortIcon('brand') }}</mat-icon>
-          </button>
-        </th>
-
-        <td mat-cell *matCellDef="let carpaint">{{ carpaint.brand }}</td>
-      </ng-container>-->
 
 
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef> Ações </th>
         <td mat-cell *matCellDef="let material; let i = index">
           <ng-container *ngIf="editIndex === i; else readActions">
-            <button mat-button (click)="saveEdit(material.id)">Salvar</button>
-            <button mat-button (click)="cancelEdit()">Cancelar</button>
+            <button
+              mat-button
+              matTooltip="Salvar a edição"
+              (click)="saveEdit(material.id)">
+              <mat-icon>save</mat-icon>
+            </button>
+            <button matTooltip="Cancelar" color="warn" mat-button (click)="cancelEdit()"><mat-icon>cancel</mat-icon></button>
           </ng-container>
           <ng-template #readActions>
-            <button *ngIf="isAdmin" mat-button (click)="startEdit(i)">
+            <button *ngIf="!isAdmin" [disabled]="material.quantity === 0" mat-button color="primary"
+              (click)="useMaterial(material)">
+              Usar
+            </button>
+            <button matTooltip="Editar"  *ngIf="isAdmin" mat-button (click)="startEdit(i)">
               <mat-icon>edit</mat-icon>
             </button>
-            <button *ngIf="isAdmin" mat-button color="warn" (click)="removeMaterial(material.materialName)">
+            <button matTooltip="Remover" *ngIf="isAdmin" mat-button color="warn" (click)="removeMaterial(material.materialName)">
               <mat-icon>delete</mat-icon>
             </button>
           </ng-template>
@@ -84,7 +75,7 @@
       </ng-container>
 
 
-        <!--<ng-container matColumnDef="actions">
+      <!--<ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Ações</th>
           <td mat-cell *matCellDef="let material">
             <button *ngIf="isAdmin" mat-button color="warn" (click)="removeMaterial(material.materialName)">
@@ -108,7 +99,6 @@
 
 
 
-<button  mat-fab color="primary" class="fab-button" (click)="openFab()">
+<button mat-fab color="primary" class="fab-button" (click)="openFab()">
   <mat-icon>add</mat-icon>
 </button>
-
