@@ -58,10 +58,8 @@ export class FormDialogComponent implements OnInit{
         colorName,
         code,
         quantity,
-        brand
+        brand,
       }
-
-
       try{
 
         const phoneNumber = '+555196699337'; // Número do colaborador com código do país

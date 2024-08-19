@@ -3,7 +3,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { getApp } from 'firebase/app';
 import { getAuth, onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { addDoc, collection, deleteDoc, doc, Firestore, getDoc, getDocs, getFirestore, onSnapshot, orderBy, query, serverTimestamp, setDoc, updateDoc, where } from 'firebase/firestore';
-import { BehaviorSubject, from, Observable } from 'rxjs';
+import { BehaviorSubject, from, lastValueFrom, Observable } from 'rxjs';
 import { DialogComponent } from '../shared/dialog/dialog/dialog.component';
 import { DialogErrorComponent } from '../shared/dialog/dialog-error/dialog-error.component';
 import { DialogSuccessComponent } from '../shared/dialog/dialog-success/dialog-success.component';
@@ -12,6 +12,7 @@ import { SendNotificationService } from './send-notification.service';
 
 import { LogService } from './log.service';
 import { Carpaints } from '../models/carpaints';
+import { HttpClient } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -23,12 +24,14 @@ export class CarPaintsService {
   private app;
   private db;
   private userSubject = new BehaviorSubject<FirebaseUser | null>(null);
+  private apiUrl = 'http://localhost:3000/api/carpaint/save';
 
   constructor(
     private dialog: MatDialog,
     private dataRefreshService: DataRefreshService,
     private whatsapp: SendNotificationService,
-    private logService: LogService
+    private logService: LogService,
+    private http: HttpClient
   ) {
 
     this.app = getApp();
@@ -121,6 +124,31 @@ export class CarPaintsService {
       dialogRef.close();
     }
   }
+
+  //Metodo para HTTP
+  async addOrUpdateCarPaint1(carpaint: Carpaints): Promise<void> {
+    const dialogRef = this.dialog.open(DialogComponent, {
+      data: {
+        text: 'Salvando dados...',
+      },
+      disableClose: true,
+    });
+
+    try {
+      // Realiza a requisição HTTP para a API Node.js
+      const response = await lastValueFrom(this.http.post(this.apiUrl, carpaint ));
+      console.log(response)
+      this.showSuccessDialog('Sucesso', 'Tinta salva com sucesso!');
+      this.dataRefreshService.triggerRefresh();
+
+    } catch (error) {
+      console.error('Erro ao salvar tinta: ', error);
+      this.showErrorDialog('Erro', 'Não foi possível salvar a tinta.');
+    } finally {
+      dialogRef.close();
+    }
+  }
+
 
   updateCarPaints() { }
 
